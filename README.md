@@ -112,8 +112,8 @@ But you can't send a cookie, modify request headers, or even curl options.
 use Rakit\Curl\Curl;
 
 // simple GET
-$response = Curl::doGet('http://targetsite.com', array('page', 2));
+$response = Curl::doGet('http://targetsite.com', array('page' => 2));
 
 // simple POST 
-$response = Curl::doPost('http://targetsite.com/product/delete', array('id', 5));
+$response = Curl::doPost('http://targetsite.com/product/delete', array('id' => 5));
 ```
