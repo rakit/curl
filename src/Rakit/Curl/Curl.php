@@ -4,450 +4,453 @@ namespace Rakit\Curl;
 
 class Curl {
 
-  /**
-   * @param curl $curl for curl_init()
-   */
-  protected $curl;
+    /**
+     * @param curl $curl for curl_init()
+     */
+    protected $curl;
 
-  /**
-   * @param string $url for url target
-   */
-  protected $url;
+    /**
+     * @param string $url for url target
+     */
+    protected $url;
 
-  /**
-   * @param array $params for store query params or post fields
-   */
-  protected $params = array();
+    /**
+     * @param array $params for store query params or post fields
+     */
+    protected $params = array();
 
-  /**
-   * @param array $cookies for store cookie data
-   */
-  protected $cookies = array();
+    /**
+     * @param array $cookies for store cookie data
+     */
+    protected $cookies = array();
 
-  /**
-   * @param array $options for store curl options
-   */
-  protected $options = array();
+    /**
+     * @param array $options for store curl options
+     */
+    protected $options = array();
 
-  /**
-   * @param array $files for store file post fields
-   */
-  protected $files = array();
+    /**
+     * @param array $files for store file post fields
+     */
+    protected $files = array();
 
-  /**
-   * @param array $headers for store header settings
-   */
-  protected $headers = array();
+    /**
+     * @param array $headers for store header settings
+     */
+    protected $headers = array();
 
-  /**
-   * @param bool $closed
-   */
-  protected $closed = FALSE;
+    /**
+     * @param bool $closed
+     */
+    protected $closed = FALSE;
 
-  /**
-   * @param mixed $error_message
-   */
-  protected $error_message = null;
+    /**
+     * @param mixed $error_message
+     */
+    protected $error_message = null;
 
-  /**
-   * @param mixed $errno
-   */
-  protected $errno = null;
+    /**
+     * @param mixed $errno
+     */
+    protected $errno = null;
 
-  /**
-   * @param Response $response for store response object after curl_exec()
-   */
-  public $response = null;
+    /**
+     * @param Response $response for store response object after curl_exec()
+     */
+    public $response = null;
 
-  public function __construct($url, array $params = array())
-  {
-    // check curl extension
-    if ( ! extension_loaded('curl')) {
-			throw new \ErrorException('cURL library need PHP cURL extension');
-		}
+    public function __construct($url, array $params = array())
+    {
+        // check curl extension
+        if ( ! extension_loaded('curl')) {
+            throw new \ErrorException('cURL library need PHP cURL extension');
+        }
 
-    $this->curl = curl_init();
-    $this->url = $url;
-    $this->params = $params;
+        $this->curl = curl_init();
+        $this->url = $url;
+        $this->params = $params;
 
-    $this->timeout(10);
-    $this->option(CURLOPT_RETURNTRANSFER, 1);
-    $this->option(CURLOPT_HEADER, TRUE);
-  }
-
-  /**
-   * set timeout
-   *
-   * @param int $time request time limit
-   * @return self
-   */
-  public function timeout($time)
-  {
-    $this->option(CURLOPT_CONNECTTIMEOUT, $time);
-
-    return $this;
-  }
-
-  /**
-   * set http authentication
-   *
-   * @param string username
-   * @param string password
-   * @param string type curl authentication type
-   *
-   * @return self
-   */
-  public function auth($username, $password, $type = 'basic')
-  {
-    $auth_type = constant('CURLAUTH_' . strtoupper($type));
-
-    $this->option(CURLOPT_HTTPAUTH, $auth_type);
-    $this->option(CURLOPT_USERPWD, $username . ':' . $password);
-
-    return $this;
-  }
-
-  /**
-   * set useragent
-   *
-   * @param string $user_agent
-   * @return self
-   */
-  public function useragent($user_agent)
-  {
-    $this->option(CURLOPT_USERAGENT, $user_agent);
-
-    return $this;
-  }
-
-  /**
-   * set referer
-   *
-   * @param string $referer
-   * @return self
-   */
-  public function referer($referer)
-  {
-    $this->option(CURLOPT_REFERER, $referer);
-
-    return $this;
-  }
-
-  /**
-   * set an option
-   *
-   * @param string $option option key
-   * @param mixed $value option value
-   * @return self
-   */
-  public function option($option, $value)
-  {
-    $this->options[$option] = $value;
-
-    return $this;
-  }
-
-  /**
-   * check if option has been setted
-   *
-   * @param string $option option name
-   */
-  public function hasOption($option)
-  {
-    return array_key_exists($option, $this->options);
-  }
-
-  /**
-   * set proxy
-   *
-   * @param string $url proxy url
-   * @param int $port proxy port
-   * @return self
-   */
-  public function proxy($url, $port = 80)
-  {
-    $this->option(CURLOPT_HTTPPROXYTUNNEL, true);
-    $this->option(CURLOPT_PROXY, $url . ':' . $port);
-    return $this;
-  }
-
-  /**
-   * set request header
-   *
-   * @param string $key header key
-   * @param string $value header value
-   * @return self
-   */
-  public function header($key, $value = null)
-  {
-    $this->headers[] = is_null($value)? $key : $key.': '.$value;
-
-    return $this;
-  }
-
-  /**
-   * getting curl session
-   */
-  public function getCurl()
-  {
-    return $this->curl;
-  }
-
-  /**
-   * set request data(params)
-   *
-   * @param string $key
-   * @param string $value
-   * @return self
-   */
-  public function param($key, $value)
-  {
-    $this->params[$key] = $value;
-    return $this;
-
-    return $this;
-  }
-
-  /**
-   * set request cookie
-   *
-   * @param string $key
-   * @param string $value
-   * @return self
-   */
-  public function cookie($key, $value)
-  {
-    $this->cookies[$key] = $value;
-
-    return $this;
-  }
-
-  /**
-   * add a file to upload
-   *
-   * @param string $key post file key
-   * @param string $filepath
-   * @param string $mimetype
-   * @param string $filename posted filename
-   * @return self
-   */
-  public function addFile($key, $filepath, $mimetype='', $filename='')
-  {
-    $postfield = "@$filepath;filename="
-            . ($filename ?: basename($filepath))
-            . ($mimetype ? ";type=$mimetype" : '');
-
-    $this->files[$key] = $postfield;
-
-    return $this;
-  }
-
-  /**
-   * set request as ajax(XMLHttpRequest)
-   */
-  public function ajax()
-  {
-    $this->header("X-Requested-With: XMLHttpRequest");
-    return $this;
-  }
-
-  /**
-   * execute get request
-   *
-   * @param array $data
-   * @return Rakit\Curl\Response
-   */
-  public function get(array $data = array())
-  {
-    $params = array_merge($this->params, $data);
-
-    $params = !empty($this->params)? '?' . http_build_query($this->params) : '';
-    $url = $this->url.$params;
-    $this->option(CURLOPT_URL, $url);
-    $this->option(CURLOPT_HTTPGET, TRUE);
-
-    return $this->execute();
-  }
-
-  /**
-   * execute post request
-   *
-   * @param array $data
-   * @return Rakit\Curl\Response
-   */
-  public function post(array $data = array())
-  {
-    $params = array_merge($this->params, $this->files, $data);
-
-    $this->option(CURLOPT_URL, $this->url);
-    $this->option(CURLOPT_POST, TRUE);
-    $this->option(CURLOPT_POSTFIELDS, $params);
-
-    return $this->execute();
-  }
-
-  /**
-   * execute put request
-   *
-   * @param array $data
-   * @return Rakit\Curl\Response
-   */
-  public function put(array $data = array())
-  {
-    $params = array_merge($this->params, $data);
-
-    $params = !empty($this->params)? '?' . http_build_query($this->params) : '';
-    $url = $this->url.$params;
-    $this->option(CURLOPT_URL, $url);
-    $this->option(CURLOPT_CUSTOMREQUEST, 'PUT');
-
-    return $this->execute();
-  }
-
-  /**
-   * execute patch request
-   *
-   * @param array $data
-   * @return Rakit\Curl\Response
-   */
-  public function patch(array $data = array())
-  {
-    $params = array_merge($this->params, $this->files, $data);
-
-    $this->option(CURLOPT_URL, $this->url);
-    $this->option(CURLOPT_CUSTOMREQUEST, 'PATCH');
-    $this->option(CURLOPT_POSTFIELDS, $params);
-
-    return $this->execute();
-  }
-
-  /**
-   * execute delete request
-   *
-   * @param array $data
-   * @return Rakit\Curl\Response
-   */
-  public function delete(array $data = array())
-  {
-    $params = array_merge($this->params, $data);
-
-    $params = !empty($this->params)? '?' . http_build_query($this->params) : '';
-    $url = $this->url.$params;
-    $this->option(CURLOPT_URL, $url);
-    $this->option(CURLOPT_CUSTOMREQUEST, 'DELETE');
-
-    return $this->execute();
-  }
-
-  /**
-   * execute curl
-   *
-   * @return Rakit\Curl\Response
-   */
-  protected function execute()
-  {
-    if(TRUE === $this->closed) {
-      throw new \Exception("Cannot execute curl session twice, create a new one!");
+        $this->timeout(10);
+        $this->option(CURLOPT_RETURNTRANSFER, 1);
+        $this->option(CURLOPT_HEADER, TRUE);
     }
 
-    $this->option(CURLOPT_COOKIE, http_build_query($this->cookies, '', '; '));
-    $this->option(CURLOPT_HTTPHEADER, $this->headers);
+    /**
+     * set timeout
+     *
+     * @param int $time request time limit
+     * @return self
+     */
+    public function timeout($time)
+    {
+        $this->option(CURLOPT_CONNECTTIMEOUT, $time);
 
-    curl_setopt_array($this->curl, $this->options);
+        return $this;
+    }
 
-    $response = curl_exec($this->curl);
-    $info = curl_getinfo($this->curl);
-    $this->errno = $error = curl_errno($this->curl);
-    $this->error_message = curl_error($this->curl);
-    $this->response = new Response($info, $response, $this->errno, $this->error_message);
+    /**
+     * set http authentication
+     *
+     * @param string username
+     * @param string password
+     * @param string type curl authentication type
+     *
+     * @return self
+     */
+    public function auth($username, $password, $type = 'basic')
+    {
+        $auth_type = constant('CURLAUTH_' . strtoupper($type));
 
-    $this->close();
+        $this->option(CURLOPT_HTTPAUTH, $auth_type);
+        $this->option(CURLOPT_USERPWD, $username . ':' . $password);
 
-    return $this->response;
-  }
+        return $this;
+    }
 
-  /**
-   * getting error number after execute
-   * @return int error number
-   */
-  public function getErrno()
-  {
-    return $this->errno;
-  }
+    /**
+     * set useragent
+     *
+     * @param string $user_agent
+     * @return self
+     */
+    public function useragent($user_agent)
+    {
+        $this->option(CURLOPT_USERAGENT, $user_agent);
 
-  /**
-   * alias for getErrno
-   * @return int error number
-   */
-  public function getError()
-  {
-    return $this->getErrno();
-  }
+        return $this;
+    }
 
-  /**
-   * getting error message after execute
-   * @return string error message
-   */
-  public function getErrorMessage()
-  {
-    return $this->error_message;
-  }
+    /**
+     * set referer
+     *
+     * @param string $referer
+     * @return self
+     */
+    public function referer($referer)
+    {
+        $this->option(CURLOPT_REFERER, $referer);
 
-  /**
-   * closing curl
-   */
-  protected function close()
-  {
-    curl_close($this->curl);
-    $this->closed = TRUE;
-  }
+        return $this;
+    }
 
-  /**
-   * simple get request
-   */
-  public static function doGet($url, array $data = array())
-  {
-    return static::make($url, $data)->get();
-  }
+    /**
+     * set an option
+     *
+     * @param string $option option key
+     * @param mixed $value option value
+     * @return self
+     */
+    public function option($option, $value)
+    {
+        $this->options[$option] = $value;
 
-  /**
-   * simple post request
-   */
-  public static function doPost($url, array $data = array())
-  {
-    return static::make($url, $data)->post();
-  }
+        return $this;
+    }
 
-  /**
-   * simple put request
-   */
-  public static function doPut($url, array $data = array())
-  {
-    return static::make($url, $data)->put();
-  }
+    /**
+     * check if option has been setted
+     *
+     * @param string $option option name
+     */
+    public function hasOption($option)
+    {
+        return array_key_exists($option, $this->options);
+    }
 
-  /**
-   * simple patch request
-   */
-  public static function doPatch($url, array $data = array())
-  {
-    return static::make($url, $data)->patch();
-  }
+    /**
+     * set proxy
+     *
+     * @param string $url proxy url
+     * @param int $port proxy port
+     * @return self
+     */
+    public function proxy($url, $port = 80)
+    {
+        $this->option(CURLOPT_HTTPPROXYTUNNEL, true);
+        $this->option(CURLOPT_PROXY, $url . ':' . $port);
+        return $this;
+    }
 
-  /**
-   * simple delete request
-   */
-  public static function doDelete($url, array $data = array())
-  {
-    return static::make($url, $data)->delete();
-  }
+    /**
+     * set request header
+     *
+     * @param string $key header key
+     * @param string $value header value
+     * @return self
+     */
+    public function header($key, $value = null)
+    {
+        $this->headers[] = is_null($value)? $key : $key.': '.$value;
 
-  /**
-   * make a curl request object
-   */
-  public static function make($url, array $data = array())
-  {
-    return new static($url, $data);
-  }
+        return $this;
+    }
+
+    /**
+     * getting curl session
+     */
+    public function getCurl()
+    {
+        return $this->curl;
+    }
+
+    /**
+     * set request data(params)
+     *
+     * @param string $key
+     * @param string $value
+     * @return self
+     */
+    public function param($key, $value)
+    {
+        $this->params[$key] = $value;
+        return $this;
+
+        return $this;
+    }
+
+    /**
+     * set request cookie
+     *
+     * @param string $key
+     * @param string $value
+     * @return self
+     */
+    public function cookie($key, $value)
+    {
+        $this->cookies[$key] = $value;
+
+        return $this;
+    }
+
+    /**
+     * add a file to upload
+     *
+     * @param string $key post file key
+     * @param string $filepath
+     * @param string $mimetype
+     * @param string $filename posted filename
+     * @return self
+     */
+    public function addFile($key, $filepath, $mimetype='', $filename='')
+    {
+        $postfield = "@$filepath;filename="
+                        . ($filename ?: basename($filepath))
+                        . ($mimetype ? ";type=$mimetype" : '');
+
+        $this->files[$key] = $postfield;
+
+        return $this;
+    }
+
+    /**
+     * set request as ajax(XMLHttpRequest)
+     */
+    public function ajax()
+    {
+        $this->header("X-Requested-With: XMLHttpRequest");
+        return $this;
+    }
+
+    /**
+     * execute get request
+     *
+     * @param array $data
+     * @return Rakit\Curl\Response
+     */
+    public function get(array $data = array())
+    {
+        $params = array_merge($this->params, $data);
+
+        $params = !empty($this->params)? '?' . http_build_query($this->params) : '';
+        $url = $this->url.$params;
+        $this->option(CURLOPT_URL, $url);
+        $this->option(CURLOPT_HTTPGET, TRUE);
+
+        return $this->execute();
+    }
+
+    /**
+     * execute post request
+     *
+     * @param array $data
+     * @return Rakit\Curl\Response
+     */
+    public function post(array $data = array())
+    {
+        $params = array_merge($this->params, $this->files, $data);
+
+        $this->option(CURLOPT_URL, $this->url);
+        $this->option(CURLOPT_POST, TRUE);
+        $this->option(CURLOPT_POSTFIELDS, $params);
+
+        return $this->execute();
+    }
+
+    /**
+     * execute put request
+     *
+     * @param array $data
+     * @return Rakit\Curl\Response
+     */
+    public function put(array $data = array())
+    {
+        $params = array_merge($this->params, $data);
+
+        $params = !empty($this->params)? '?' . http_build_query($this->params) : '';
+        $url = $this->url.$params;
+        $this->option(CURLOPT_URL, $url);
+        $this->option(CURLOPT_CUSTOMREQUEST, 'PUT');
+
+        return $this->execute();
+    }
+
+    /**
+     * execute patch request
+     *
+     * @param array $data
+     * @return Rakit\Curl\Response
+     */
+    public function patch(array $data = array())
+    {
+        $params = array_merge($this->params, $this->files, $data);
+
+        $this->option(CURLOPT_URL, $this->url);
+        $this->option(CURLOPT_CUSTOMREQUEST, 'PATCH');
+        $this->option(CURLOPT_POSTFIELDS, $params);
+
+        return $this->execute();
+    }
+
+    /**
+     * execute delete request
+     *
+     * @param array $data
+     * @return Rakit\Curl\Response
+     */
+    public function delete(array $data = array())
+    {
+        $params = array_merge($this->params, $data);
+
+        $params = !empty($this->params)? '?' . http_build_query($this->params) : '';
+        $url = $this->url.$params;
+        $this->option(CURLOPT_URL, $url);
+        $this->option(CURLOPT_CUSTOMREQUEST, 'DELETE');
+
+        return $this->execute();
+    }
+
+    /**
+     * execute curl
+     *
+     * @return Rakit\Curl\Response
+     */
+    protected function execute()
+    {
+        if(TRUE === $this->closed) {
+            throw new \Exception("Cannot execute curl session twice, create a new one!");
+        }
+
+        if(!empty($this->cookies)) {
+            $this->option(CURLOPT_COOKIE, http_build_query($this->cookies, '', '; '));
+        }
+
+        $this->option(CURLOPT_HTTPHEADER, $this->headers);
+
+        curl_setopt_array($this->curl, $this->options);
+
+        $response = curl_exec($this->curl);
+        $info = curl_getinfo($this->curl);
+        $this->errno = $error = curl_errno($this->curl);
+        $this->error_message = curl_error($this->curl);
+        $this->response = new Response($info, $response, $this->errno, $this->error_message);
+
+        $this->close();
+
+        return $this->response;
+    }
+
+    /**
+     * getting error number after execute
+     * @return int error number
+     */
+    public function getErrno()
+    {
+        return $this->errno;
+    }
+
+    /**
+     * alias for getErrno
+     * @return int error number
+     */
+    public function getError()
+    {
+        return $this->getErrno();
+    }
+
+    /**
+     * getting error message after execute
+     * @return string error message
+     */
+    public function getErrorMessage()
+    {
+        return $this->error_message;
+    }
+
+    /**
+     * closing curl
+     */
+    protected function close()
+    {
+        curl_close($this->curl);
+        $this->closed = TRUE;
+    }
+
+    /**
+     * simple get request
+     */
+    public static function doGet($url, array $data = array())
+    {
+        return static::make($url, $data)->get();
+    }
+
+    /**
+     * simple post request
+     */
+    public static function doPost($url, array $data = array())
+    {
+        return static::make($url, $data)->post();
+    }
+
+    /**
+     * simple put request
+     */
+    public static function doPut($url, array $data = array())
+    {
+        return static::make($url, $data)->put();
+    }
+
+    /**
+     * simple patch request
+     */
+    public static function doPatch($url, array $data = array())
+    {
+        return static::make($url, $data)->patch();
+    }
+
+    /**
+     * simple delete request
+     */
+    public static function doDelete($url, array $data = array())
+    {
+        return static::make($url, $data)->delete();
+    }
+
+    /**
+     * make a curl request object
+     */
+    public static function make($url, array $data = array())
+    {
+        return new static($url, $data);
+    }
 
 }
