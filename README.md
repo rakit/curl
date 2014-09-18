@@ -12,23 +12,21 @@ use Rakit\Curl\Curl;
 $request = new Curl('http://wikipedia.com');
 $response = $request->get();
 
+// then, you can do something with response object
 if(! $response->error()) {
 
-  // then, you can do something with response object
   $html = $response->getBody();
   $content_type = $response->getInfo('content_type');
   $cookie = $response->getCookie();
   $http_versison = $response->
   $all_headers = $response->getHeaders();
-  
-  
   $all_data = $response->toArray();
 
 } else {
-  
+
   $error_code = $response->getErrno();
   $error_message = $response->getErrorMessage();
-  
+
 }
 ```
 #### Example Post Request
