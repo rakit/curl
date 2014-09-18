@@ -29,11 +29,24 @@ if(! $response->error()) {
 
 }
 ```
+
+#### Using Request Parameter
+```php
+use Rakit\Curl\Curl;
+
+$request = new Curl('http://targetsite.com/products');
+$request->param('page', 2);
+$response = $request->get();
+
+// do something with Response object
+
+```
+
 #### Example Post Request
 ```php
 use Rakit\Curl\Curl;
 
-$request = new Curl('http://yoursite.com/register');
+$request = new Curl('http://targetsite.com/register');
 $request->param('name', 'John Doe');
 $request->param('email', 'johndoe@mail.com');
 $request->param('password', '12345');
@@ -48,7 +61,7 @@ $response = $request->post();
 ```php
 use Rakit\Curl\Curl;
 
-$request = new Curl('http://yoursite.com/register');
+$request = new Curl('http://targetsite.com/register');
 $request->param('name', 'John Doe');
 $request->param('email', 'johndoe@mail.com');
 $request->param('password', '12345');
@@ -60,16 +73,29 @@ $response = $request->post();
 // do something with Response object
 ```
 
+#### Send a cookie
+```php
+use Rakit\Curl\Curl;
+
+$request = new Curl('http://targetsite.com/products');
+$request->cookie('key', 'value');
+$response = $request->get();
+
+// do something with Response object
+
+```
+
 #### Create Simple Request
 
-With simple request, you dont't need to create new Curl request object.
+With simple request, you dont't need to create new Curl request object. 
+But you can't send a cookie, modify request headers, or even curl options.
 
 ```php
 use Rakit\Curl\Curl;
 
 // simple GET
-$response = Curl::doGet('http://yoursite.com', array('page', 2));
+$response = Curl::doGet('http://targetsite.com', array('page', 2));
 
 // simple POST 
-$response = Curl::doPost('http://yoursite.com/product/delete', array('id', 5));
+$response = Curl::doPost('http://targetsite.com/product/delete', array('id', 5));
 ```
