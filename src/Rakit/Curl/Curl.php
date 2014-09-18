@@ -5,57 +5,57 @@ namespace Rakit\Curl;
 class Curl {
 
     /**
-     * @param curl $curl for curl_init()
+     * @var curl session $curl
      */
     protected $curl;
 
     /**
-     * @param string $url for url target
+     * @var string $url for url target
      */
     protected $url;
 
     /**
-     * @param array $params for store query params or post fields
+     * @var array $params for store query params or post fields
      */
     protected $params = array();
 
     /**
-     * @param array $cookies for store cookie data
+     * @var array $cookies for store cookie data
      */
     protected $cookies = array();
 
     /**
-     * @param array $options for store curl options
+     * @var array $options for store curl options
      */
     protected $options = array();
 
     /**
-     * @param array $files for store file post fields
+     * @var array $files for store file post fields
      */
     protected $files = array();
 
     /**
-     * @param array $headers for store header settings
+     * @var array $headers for store header settings
      */
     protected $headers = array();
 
     /**
-     * @param bool $closed
+     * @var bool $closed
      */
     protected $closed = FALSE;
 
     /**
-     * @param mixed $error_message
+     * @var mixed $error_message
      */
     protected $error_message = null;
 
     /**
-     * @param mixed $errno
+     * @var mixed $errno
      */
     protected $errno = null;
 
     /**
-     * @param Response $response for store response object after curl_exec()
+     * @var Response $response for store response object after curl_exec()
      */
     public $response = null;
 
