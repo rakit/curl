@@ -18,7 +18,7 @@ if(! $response->error()) {
   $html = $response->getBody();
   $content_type = $response->getInfo('content_type');
   $cookie = $response->getCookie();
-  $http_versison = $response->
+  $http_version = $response->getHeader('http_version');
   $all_headers = $response->getHeaders();
   $all_data = $response->toArray();
 
