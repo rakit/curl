@@ -1,0 +1,16 @@
+{
+    "name": "rakit/curl",
+    "description": "just another php curl library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Muhammad Syifa",
+            "email": "emsifa@gmail.com"
+        }
+    ],
+    "autoload": {
+      "psr-0": {
+        "Rakit\\Curl\\": "src/"
+      }
+    }
+}
