@@ -36,7 +36,25 @@ use Rakit\Curl\Curl;
 
 $request = new Curl('http://targetsite.com/products');
 $request->param('page', 2);
+$request->param('category', 'software'); 
 $response = $request->get();
+
+// do something with Response object
+
+```
+
+**or**
+
+```php
+use Rakit\Curl\Curl;
+
+$params = array(
+  'page' => 2,
+  'category' => 'software'
+);
+
+$request = new Curl('http://targetsite.com/products');
+$response = $request->get($params);
 
 // do something with Response object
 
