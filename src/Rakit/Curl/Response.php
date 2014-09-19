@@ -167,7 +167,10 @@ class Response {
         $cookie['value'] = array_shift($exp);
 
         foreach($exp as $i => $data) {
-            list($key, $value) = explode('=', $data);
+            $_parse = explode('=', $data, 2);
+            $key = $_parse[0];
+            $value = isset($_parse[1])? $_parse[1] : "";
+
             $cookie[trim(strtolower($key))] = trim($value);
         }
 
