@@ -15,12 +15,23 @@ $response = $request->get();
 // then, you can do something with response object
 if(! $response->error()) {
 
+  // getting response file content
   $html = $response->getBody();
-  $content_type = $response->getInfo('content_type');
+  
+  // simply get response content type
+  $content_type = $response->getContentType(); 
+  
+  // get content type via curl info
+  $content_type = $response->getInfo('content_type'); 
+  
+  // getting response cookies
   $cookie = $response->getCookie();
+  
+  // simply get response header item
   $http_version = $response->getHeader('http_version');
+  
+  // get all header items
   $all_headers = $response->getHeaders();
-  $all_data = $response->toArray();
 
 } else {
 
