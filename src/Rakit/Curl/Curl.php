@@ -261,7 +261,7 @@ class Curl {
     {
         $params = array_merge($this->params, $data);
 
-        $params = !empty($this->params)? '?' . urldecode(http_build_query($this->params)) : '';
+        $params = !empty($params)? '?' . urldecode(http_build_query($params)) : '';
         $url = $this->url.$params;
         $this->option(CURLOPT_URL, $url);
         $this->option(CURLOPT_HTTPGET, TRUE);
