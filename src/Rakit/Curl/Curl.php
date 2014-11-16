@@ -40,6 +40,16 @@ class Curl {
     protected $headers = array();
 
     /**
+     * @var int $limit_redirect_count
+     */
+    protected $limit_redirect_count = 0;
+
+    /**
+     * @var array $redirect_urls
+     */
+    protected $redirect_urls = array();
+
+    /**
      * @var bool $closed
      */
     protected $closed = FALSE;
@@ -242,6 +252,15 @@ class Curl {
         return $this;
     }
 
+    public function autoRedirect($count)
+    {
+        if(!is_int($count)) {
+            throw new \InvalidArgumentException("Limit redirect must be integer");
+        }
+
+        $this->limit_redirect_count = $count;
+    }
+
     /**
      * set request as ajax(XMLHttpRequest)
      */
@@ -261,7 +280,7 @@ class Curl {
     {
         $params = array_merge($this->params, $data);
 
-        $params = !empty($this->params)? '?' . http_build_query($this->params) : '';
+        $params = !empty($params)? '?' . http_build_query($params) : '';
         $url = $this->url.$params;
         $this->option(CURLOPT_URL, $url);
         $this->option(CURLOPT_HTTPGET, TRUE);
@@ -340,6 +359,28 @@ class Curl {
     }
 
     /**
+     * getting redirect urls
+     * @return array redirect urls
+     */
+    public function getRedirectUrls()
+    {
+        return $this->redirect_urls;
+    }
+
+    /**
+     * getting last url (may be last redirected url or defined url)
+     * @return string url
+     */
+    public function getFinalUrl()
+    {
+        if(count($this->redirect_urls) > 0) {
+            return $this->redirect_urls[count($this->redirect_urls)-1];
+        } else {
+            return $this->url;
+        }
+    }
+
+    /**
      * execute curl
      *
      * @return Rakit\Curl\Response
@@ -366,7 +407,29 @@ class Curl {
 
         $this->close();
 
+        if($this->limit_redirect_count > 0) {
+            $count_redirect = 0;
+            while($this->response->isRedirect()) {
+                $this->redirect();
+                $count_redirect++;
+
+                if($count_redirect >= $this->limit_redirect_count) {
+                    break;
+                }
+            }
+        }
+        
         return $this->response;
+    }
+
+    /**
+     * redirect from response 3xx
+     */
+    protected function redirect()
+    {
+        $redirect_url = $this->response->getHeader("location");
+        $this->response = static::doGet($redirect_url);
+        $this->redirect_urls[] = $redirect_url;
     }
 
     /**
