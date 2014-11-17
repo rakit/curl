@@ -50,6 +50,11 @@ class Curl {
     protected $redirect_urls = array();
 
     /**
+     * @var string $cookie_jar for storing session cookies while request
+     */
+    protected $cookie_jar = null;
+
+    /**
      * @var bool $closed
      */
     protected $closed = FALSE;
@@ -252,6 +257,11 @@ class Curl {
         return $this;
     }
 
+    /**
+     * auto redirect if reseponse is redirecting (status: 3xx)
+     * 
+     * @param int $count maximum redirecting
+     */
     public function autoRedirect($count)
     {
         if(!is_int($count)) {
@@ -259,6 +269,18 @@ class Curl {
         }
 
         $this->limit_redirect_count = $count;
+    }
+
+    /**
+     * storing session cookie with CURLOPT_COOKIEJAR and CURLOPT_COOKIEFILE
+     * 
+     * @param string $file file to store cookies
+     */
+    public function storeSession($file)
+    {
+        $this->option(CURLOPT_COOKIEJAR, $file);
+        $this->option(CURLOPT_COOKIEFILE, $file);
+        $this->cookie_jar = $file;
     }
 
     /**
@@ -428,7 +450,11 @@ class Curl {
     protected function redirect()
     {
         $redirect_url = $this->response->getHeader("location");
-        $this->response = static::doGet($redirect_url);
+        $curl = new static($redirect_url);
+        if($this->cookie_jar) {            
+            $curl->storeSession($this->cookie_jar);
+        }
+        $this->response = $curl->get();
         $this->redirect_urls[] = $redirect_url;
     }
 
