@@ -1,7 +1,30 @@
 rakit-curl
 ==========
 
-just another PHP cURL library
+Just another PHP cURL wrapper
+
+## Installation
+As you can see, this library contain `composer.json` file. But at this time, i have not post this library on packagist. So if you want to use it via composer, you can manually add this repository in your `composer.json` file.
+
+So, your `composer.json` file should look like this:
+
+```json
+{
+    "require": {
+        "rakit/curl": "dev-master"
+    },
+    "repositories": [
+        {
+            "url": "https://github.com/emsifa/rakit-curl",
+            "type": "vcs"
+        }
+    ]
+}
+```
+Then you can run `composer install` or `composer update`.
+
+Optionally you can download/clone this library and load it into your project.
+
 
 ## Examples
 
@@ -114,6 +137,47 @@ $response = $request->get();
 
 ```
 
+#### Auto Redirect
+Auto redirect allow cURL to auto redirect while response is redirection (status: 3xx). 
+
+Example:
+```php
+use Rakit\Curl\Curl;
+
+$request = new Curl('http://targetsite.com/admin/product/delete/1');
+$request->autoRedirect(5); // 5 is maximum redirection
+
+$response = $request->get();
+
+// what if 6th request is also redirection? it's good to check
+if($response->isRedirect()) {
+    throw new \Exception("Too many redirection");
+}
+
+// do something with response
+```
+
+#### Storing Session
+It is easy way to store session automatically with CURLOPT_COOKIEJAR and CURLOPT_COOKIEFILE. It is useful when you want to grab something that require session cookies to login or anything else. For use this, you must have directory that have access to write file for storing session.
+
+For example you want grab redirected page after login:
+```php
+use Rakit\Curl\Curl;
+
+$session_file = "path/to/store/sitetarget.session";
+
+$request = new Curl("http://sitetarget.com/login");
+$request->autoRedirect(5);
+$request->storeSession($session_file);
+
+$response = $request->post(array(
+    'username' => 'my_username',
+    'password' => 'my_password'
+));
+
+// do something with response object
+```
+
 #### Create Simple Request
 
 With simple request, you dont't need to create new Curl request object. 
@@ -128,3 +192,82 @@ $response = Curl::doGet('http://targetsite.com', array('page' => 2));
 // simple POST 
 $response = Curl::doPost('http://targetsite.com/product/delete', array('id' => 5));
 ```
+
+## Response Object
+In examples above, i always told you to do something with response object, but what it is? what you can do with response object?
+
+Response object is object that returned from your cURL request. Response object contain result data from HTTP response such as response headers, cookies, body, etc.
+
+Here is that you can do with response object:
+
+#### isNotFound()
+Shortcut for check response status code is 404 or not.
+```php
+$response = Curl::doGet("http://sitetarget.com/blablabla");
+
+if($response->isNotFound()) {
+   // 404 page not found
+}
+```
+
+#### isRedirect()
+Return true if status code is 3xx.
+```php
+// redirecting example
+
+$response = Curl::doGet("http://sitetarget.com/redirect-me");
+
+while($response->isRedirect()) {
+    $redirect_url = $response->getHeader("location");
+    $response = Curl::doGet($redirect_url);
+}
+
+```
+
+#### getBody()
+Getting response body like html code, image content, etc.
+
+#### length()
+Getting response length (response body string + response header string).
+
+#### isHtml()
+Return true if response content-type is text/html.
+
+#### error()
+Return true if there is error in request
+
+#### getErrno()
+Getting error code, 0 = no error.
+
+#### getErrorMessage()
+Getting error message, empty if no error
+
+#### getHeader($key, $default = null)
+Getting header item
+```php
+$response = Curl::doGet("http://sitetarget.com");
+
+$http_version = $response->getHeader("http_version");
+$content_type = $response->getHeader("content-type");
+// and many more
+```
+#### getHeaders()
+Getting all header items as array.
+
+#### getHeaderString()
+Get response headers as raw header string.
+
+#### getStatusCode()
+Getting response status code.
+
+#### getContentType()
+Shortcut for getting response content-type.
+
+#### getInfo($key, $default = null)
+Getting info item like curl_getinfo()
+
+#### getAllInfo()
+Getting all info as array.
+
+
+
