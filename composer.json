@@ -1,6 +1,6 @@
 {
     "name": "rakit/curl",
-    "description": "just another php curl library",
+    "description": "Another php curl library",
     "license": "MIT",
     "authors": [
         {
