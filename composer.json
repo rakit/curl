@@ -9,8 +9,8 @@
         }
     ],
     "autoload": {
-      "psr-0": {
-        "Rakit\\Curl\\": "src/"
-      }
+        "psr-0": {
+            "Rakit\\Curl\\": "src/"
+        }
     }
 }
